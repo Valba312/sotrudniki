@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
+codex/implement-employee-digital-card-module
     port: 5173,
     proxy: {
       '/api': {
@@ -11,5 +12,8 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+=======
+    port: 5173
+main
   }
 });

@@ -13,6 +13,7 @@
 - Пагинация списка и истории изменений
 - Базовая авторизация по заголовкам `x-user-id` и `x-user-role`
 
+codex/implement-employee-digital-card-module
 ### Запуск backend
 
 Требуется Node.js 20+.
@@ -24,6 +25,16 @@ npm run dev # поднимет API на http://localhost:3000
 ```
 
 Основные эндпоинты (префикс `/api`):
+=======
+Запуск (понадобится установка npm-зависимостей):
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Основные эндпоинты:
+ main
 - `POST /api/employees`
 - `GET /api/employees/:id`
 - `PUT/PATCH /api/employees/:id`
@@ -33,6 +44,7 @@ npm run dev # поднимет API на http://localhost:3000
 - `POST /api/employees/:id/roles`, `DELETE /api/employees/:id/roles/:roleId`
 - `GET /api/employees/:id/changes`
 
+ codex/implement-employee-digital-card-module
 Тесты Vitest для ключевых сценариев находятся в `backend/tests/employeeService.test.ts` и запускаются командой:
 
 ```bash
@@ -81,11 +93,15 @@ curl -X POST http://localhost:3000/api/employees/<id-из-шага-1>/status \
 curl -H "x-user-id: admin" -H "x-user-role: admin" \
   "http://localhost:3000/api/employees/<id-из-шага-1>/changes?page=1&pageSize=5"
 ```
+=======
+Тесты Vitest для ключевых сценариев находятся в `backend/tests/employeeService.test.ts`.
+main
 
 ## Frontend
 
 Исходники: `frontend/src`. Vite-приложение с компонентом `EmployeeCard` и демо-данными для автономного просмотра.
 
+ codex/implement-employee-digital-card-module
 Запуск (при запущенном backend на 3000 порт проксируется автоматически):
 
 ```bash
@@ -117,6 +133,16 @@ npm run dev # откроет http://localhost:5173
   - Любой reverse-proxy (например, Nginx или Caddy) может отдавать статический `frontend/dist` и пробрасывать `/api` на бэкенд.
 
 Для стабильной работы в облаке обязательно задайте переменные окружения (например, `VITE_API_BASE`) и используйте HTTPS-URL бэкенда, чтобы фронтенд корректно стучался в API.
+=======
+Запуск:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+При отсутствии доступного API демо-дизайн использует мок `demoEmployee`.
+ main
 
 ## Как сохранить изменения в Git
 
