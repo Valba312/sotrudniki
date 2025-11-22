@@ -2,7 +2,7 @@ import axios from 'axios';
 import { EmployeeWithRelations } from '../types';
 import { demoEmployee } from './mock';
 
-const api = axios.create({ baseURL: '/api' });
+const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE ?? '/api' });
 
 export async function fetchEmployee(id: string): Promise<EmployeeWithRelations> {
   try {

@@ -96,6 +96,28 @@ npm run dev # откроет http://localhost:5173
 
 При отсутствии доступного API демо-дизайн использует мок `demoEmployee`, но при запущенном сервере данные берутся с `/api` через прокси Vite.
 
+### Развертывание в облаке
+
+Быстрый старт без собственной инфраструктуры:
+
+- **Render / Railway** (backend):
+  1. Создайте новый Web Service из репозитория.
+  2. Build command: `cd backend && npm install && npm run build`.
+  3. Start command: `cd backend && npm start`.
+  4. Переменная окружения `PORT` выставляется облаком автоматически.
+
+- **Vercel / Netlify** (frontend):
+  1. Проект — директория `frontend`.
+  2. Build command: `npm install && npm run build`.
+  3. Output: `frontend/dist`.
+  4. Прокиньте адрес бэкенда через переменную `VITE_API_BASE=https://<your-backend-host>/api`.
+
+- **Docker (универсально)**:
+  - Соберите и запустите бэкенд: `cd backend && npm install && npm run build && PORT=3000 npm start`.
+  - Любой reverse-proxy (например, Nginx или Caddy) может отдавать статический `frontend/dist` и пробрасывать `/api` на бэкенд.
+
+Для стабильной работы в облаке обязательно задайте переменные окружения (например, `VITE_API_BASE`) и используйте HTTPS-URL бэкенда, чтобы фронтенд корректно стучался в API.
+
 ## Как сохранить изменения в Git
 
 1. Проверьте текущие изменения и ветку:
