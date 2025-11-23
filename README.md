@@ -7,6 +7,10 @@
 Исходники: `backend/src`
 
 Возможности:
+codex/implement-employee-digital-card-module-j5qguu
+=======
+
+main
 - CRUD сотрудников с вложенными данными (обязанности, графики, навыки, роли)
 - Смена статуса с записью истории и аудита (`employee_status_history`, `employee_change_log` в памяти)
 - Фильтрация списка по статусу, отделу, роли, навыку, менеджеру и поиску
@@ -21,6 +25,7 @@
 cd backend
 npm install
 npm run dev # поднимет API на http://localhost:3000
+codex/implement-employee-digital-card-module-j5qguu
 ```
 
 Основные эндпоинты (префикс `/api`):
@@ -138,3 +143,5 @@ npm run dev # откроет http://localhost:5173
    git push origin <branch-name>
    ```
 Если удалённый репозиторий ещё не настроен, добавьте его через `git remote add origin <url>` и повторите шаги отправки.
+=======
+main
