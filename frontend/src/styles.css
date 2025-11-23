@@ -1,0 +1,127 @@
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #1f2937;
+  background-color: #f5f6f7;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #f5f6f7;
+}
+
+.app {
+  max-width: 1000px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.card__header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.card__title {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.card__subtitle {
+  color: #6b7280;
+}
+
+.card__contacts {
+  text-align: right;
+  color: #374151;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.badge--active { background: #ecfdf3; color: #15803d; }
+.badge--probation { background: #fffbeb; color: #a16207; }
+.badge--on_leave { background: #eff6ff; color: #1d4ed8; }
+.badge--dismissed { background: #fef2f2; color: #b91c1c; }
+.badge--archived { background: #f3f4f6; color: #4b5563; }
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.tab--active {
+  background: #2563eb;
+  color: white;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.info-row {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+}
+
+.muted { color: #6b7280; }
+
+.list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.list__title { font-weight: 600; }
+
+.pill-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.pill {
+  background: #eef2ff;
+  color: #4338ca;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.timeline { list-style: none; padding: 0; margin: 0; }
+.timeline__item { display: flex; gap: 12px; margin-bottom: 12px; }
+.timeline__dot { width: 12px; height: 12px; background: #2563eb; border-radius: 50%; margin-top: 6px; }
+.timeline__title { font-weight: 600; }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+.table th { background: #f3f4f6; }
