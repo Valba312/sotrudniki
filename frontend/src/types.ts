@@ -1,4 +1,7 @@
 export type EmployeeStatus = 'active' | 'probation' | 'on_leave' | 'dismissed' | 'archived';
+export type EmploymentType = 'full_time' | 'contract' | 'intern' | 'temporary';
+export type WorkLocation = 'office' | 'remote' | 'hybrid';
+export type WorkScheduleType = 'five_two' | 'shift' | 'flexible' | 'remote_first';
 export type SkillLevel = 'beginner' | 'middle' | 'senior' | 'expert';
 
 export interface EmployeeWithRelations {
@@ -9,16 +12,16 @@ export interface EmployeeWithRelations {
   date_of_birth: string;
   personal_ids: string[];
   hire_date: string;
-  employment_type: string;
+  employment_type: EmploymentType;
   position: string;
   department: string;
   manager_id?: string;
-  work_location: string;
+  work_location: WorkLocation;
   email_work: string;
   phone_work: string;
   email_personal?: string;
   phone_personal?: string;
-  work_schedule_type: string;
+  work_schedule_type: WorkScheduleType;
   work_hours_per_week: number;
   status: EmployeeStatus;
   responsibilities: Responsibility[];
@@ -67,7 +70,7 @@ export interface Role {
 export interface ScheduleHistory {
   from_date: string;
   to_date?: string;
-  schedule_type: string;
+  schedule_type: WorkScheduleType;
   hours_per_week: number;
   comment?: string;
 }
@@ -88,3 +91,52 @@ export interface ChangeLog {
   new_value: string | null;
   comment?: string;
 }
+
+export interface EmployeePayload {
+  first_name: string;
+  last_name: string;
+  middle_name?: string;
+  date_of_birth: string;
+  personal_ids: string[];
+  hire_date: string;
+  employment_type: EmploymentType;
+  position: string;
+  department: string;
+  manager_id?: string;
+  work_location: WorkLocation;
+  email_work: string;
+  phone_work: string;
+  email_personal?: string;
+  phone_personal?: string;
+  work_schedule_type: WorkScheduleType;
+  work_hours_per_week: number;
+  status: EmployeeStatus;
+}
+
+export const employmentOptions: Record<EmploymentType, string> = {
+  full_time: 'Полная занятость',
+  contract: 'Контракт',
+  intern: 'Стажёр',
+  temporary: 'Временная занятость'
+};
+
+export const workLocationOptions: Record<WorkLocation, string> = {
+  office: 'Офис',
+  remote: 'Удалённо',
+  hybrid: 'Гибрид'
+};
+
+export const scheduleOptions: Record<WorkScheduleType, string> = {
+  five_two: '5/2',
+  shift: 'Сменный',
+  flexible: 'Гибкий',
+  remote_first: 'Remote first'
+};
+
+export const statusOptions: Record<EmployeeStatus, string> = {
+  active: 'В работе',
+  probation: 'Испытательный срок',
+  on_leave: 'В отпуске',
+  dismissed: 'Уволен',
+  archived: 'Архив'
+};

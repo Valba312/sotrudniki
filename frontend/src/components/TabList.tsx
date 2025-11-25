@@ -10,6 +10,7 @@ export const TabList = <T extends string>({ tabs, active, onChange }: Props<T>) 
       <button
         key={tab}
         className={`tab ${tab === active ? 'tab--active' : ''}`}
+        type="button"
         onClick={() => onChange(tab)}
       >
         {tab}

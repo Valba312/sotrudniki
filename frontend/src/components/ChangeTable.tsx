@@ -13,6 +13,11 @@ export const ChangeTable = ({ changes }: { changes: ChangeLog[] }) => (
       </tr>
     </thead>
     <tbody>
+      {changes.length === 0 && (
+        <tr>
+          <td colSpan={6}>Пока нет изменений</td>
+        </tr>
+      )}
       {changes.map((change, idx) => (
         <tr key={idx}>
           <td>{change.changed_at}</td>

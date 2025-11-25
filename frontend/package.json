@@ -15,13 +15,14 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-codex/implement-employee-digital-card-module-j5qguu
-    "@vitejs/plugin-react": "^4.3.2",
-=======
-main
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.2",
     "typescript": "^5.6.3",
     "vite": "^5.4.9"
-  }
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "npm@10"
 }
