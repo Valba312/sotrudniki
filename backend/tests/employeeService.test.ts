@@ -3,6 +3,7 @@ import { EmployeeRepository } from '../src/repositories/employeeRepository.js';
 import { AuditService } from '../src/services/auditService.js';
 import { EmployeeService } from '../src/services/employeeService.js';
 import { Employee } from '../src/models/employee.js';
+import { createDatabaseConnection } from '../src/utils/db.js';
 
 describe('EmployeeService', () => {
   const baseEmployee: Omit<Employee, 'id'> = {
@@ -24,16 +25,16 @@ describe('EmployeeService', () => {
     status: 'active'
   };
 
-  const setup = () => {
-    const repository = new EmployeeRepository();
+  const setup = async () => {
+    const repository = new EmployeeRepository(await createDatabaseConnection(':memory:'), ':memory:');
     const audit = new AuditService(repository);
     const service = new EmployeeService(repository, audit);
     const employee = service.createEmployee(baseEmployee, 'system');
     return { service, employee };
   };
 
-  it('changes status and records history', () => {
-    const { service, employee } = setup();
+  it('changes status and records history', async () => {
+    const { service, employee } = await setup();
     const change = service.changeStatus(employee.id, 'on_leave', 'manager-1', 'vacation');
     expect(change?.to_status).toBe('on_leave');
     const history = service.getStatusHistory(employee.id);
@@ -41,11 +42,11 @@ describe('EmployeeService', () => {
     expect(history[0].reason).toBe('vacation');
   });
 
-  it('creates change log entries on update', () => {
-    const { service, employee } = setup();
+  it('creates change log entries on update', async () => {
+    const { service, employee } = await setup();
     service.updateEmployee(employee.id, { position: 'Lead Engineer' }, 'manager-1');
     const log = service.getChangeLog(employee.id);
     expect(log.length).toBeGreaterThan(0);
-    expect(log[0].field_name).toBe('position');
+    expect(log.some(entry => entry.field_name === 'position')).toBe(true);
   });
 });

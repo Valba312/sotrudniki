@@ -3,6 +3,7 @@ import { EmployeeCard } from './components/EmployeeCard';
 import { AdminPanel } from './components/AdminPanel';
 import { fetchEmployees } from './api/client';
 import { EmployeeWithRelations } from './types';
+import logo from './assets/images.png';
 
 export default function App() {
   const [employees, setEmployees] = useState<EmployeeWithRelations[]>([]);
@@ -17,11 +18,12 @@ export default function App() {
         setEmployees(data);
         setActiveEmployeeId(data[0]?.id ?? null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Не удалось загрузить данные');
+        setError(err instanceof Error ? err.message : 'Не удалось загрузить сотрудников. Попробуйте обновить страницу.');
       } finally {
         setLoading(false);
       }
     };
+
     load();
   }, []);
 
@@ -42,10 +44,21 @@ export default function App() {
   return (
     <div className="page">
       <header className="hero">
-        <p className="hero__eyebrow">HR‑workspace</p>
-        <h1>Цифровая карточка сотрудника</h1>
-        <p>Актуальные данные, история изменений и удобная админ‑панель в одном экране.</p>
+        <div className="brand">
+          <img src={logo} alt="Логотип ТК «Луч»" className="brand__logo" />
+          <div>
+            <p className="hero__eyebrow">ТК «Луч» · HR-кабина</p>
+            <p className="brand__slogan">Цифровая карточка сотрудника</p>
+            <h1>Досье специалиста компании</h1>
+          </div>
+        </div>
       </header>
+      <section className="intro">
+        <p>
+          Аккуратный профиль: статус, контакты, опыт, график и история изменений. Чёткая карточка для HR и руководителя —
+          без лишнего визуального шума.
+        </p>
+      </section>
 
       <div className="dashboard">
         <div className="dashboard__card">
@@ -54,8 +67,10 @@ export default function App() {
               <strong>Ошибка:</strong> {error}
             </div>
           )}
-          {!error && loading && <p className="muted">Загружаем данные...</p>}
-          {!loading && !activeEmployee && !error && <p className="muted">Пока нет ни одной карточки. Создайте сотрудника справа.</p>}
+          {!error && loading && <p className="muted">Загружаем профиль...</p>}
+          {!loading && !activeEmployee && !error && (
+            <p className="muted">Сотрудников пока нет. Добавьте первого через панель справа.</p>
+          )}
           {activeEmployee && !error && <EmployeeCard employee={activeEmployee} />}
         </div>
 

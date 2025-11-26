@@ -24,8 +24,11 @@ export const authMiddleware = (req: AuthedRequest, _res: Response, next: NextFun
 };
 
 export const authorize = (roles: Role[]) => (req: AuthedRequest, res: Response, next: NextFunction) => {
-  if (!req.user || !roles.includes(req.user.role)) {
-    return res.status(403).json({ message: 'forbidden' });
+  if (!req.user) {
+    return res.status(403).json({ message: 'forbidden: missing user' });
+  }
+  if (!roles.includes(req.user.role)) {
+    return res.status(403).json({ message: `forbidden: role ${req.user.role} lacks permission` });
   }
   next();
 };

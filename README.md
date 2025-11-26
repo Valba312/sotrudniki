@@ -28,6 +28,7 @@ npm install
 npm run dev        # http://localhost:3000
 npm run build && npm start
 ```
+- Переменная `DATABASE_URL` настраивает путь к SQLite-файлу (по умолчанию `data/employee-card.sqlite`). Для тестов/одноразовых запусков можно указать `:memory:`.
 
 #### Тесты
 ```bash

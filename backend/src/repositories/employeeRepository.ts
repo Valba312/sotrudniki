@@ -1,3 +1,4 @@
+import { Database } from 'sql.js';
 import { v4 as uuid } from 'uuid';
 import {
   Employee,
@@ -12,130 +13,183 @@ import {
   Skill
 } from '../models/employee.js';
 import { EmployeeStatus } from '../types/enums.js';
+import { persist } from '../utils/db.js';
+import path from 'path';
+
+const parseRow = <T>(row: { json?: string } | undefined): T | undefined => (row?.json ? (JSON.parse(row.json) as T) : undefined);
+const parseRows = <T>(rows: { json: string }[]) => rows.map(r => JSON.parse(r.json) as T);
 
 export class EmployeeRepository {
-  private employees = new Map<string, Employee>();
-  private responsibilities: EmployeeResponsibility[] = [];
-  private skills: Skill[] = [];
-  private roles: Role[] = [];
-  private employeeSkills: EmployeeSkill[] = [];
-  private employeeRoles: EmployeeRole[] = [];
-  private scheduleHistory: EmployeeWorkScheduleHistory[] = [];
-  private statusHistory: EmployeeStatusChange[] = [];
-  private changeLog: EmployeeChangeLogEntry[] = [];
+  private readonly dbFile: string;
+  private readonly shouldPersist: boolean;
+
+  constructor(private readonly db: Database, dbPath: string) {
+    this.dbFile = path.resolve(dbPath);
+    this.shouldPersist = dbPath !== ':memory:';
+  }
+
+  private save() {
+    if (this.shouldPersist) {
+      persist(this.db, this.dbFile);
+    }
+  }
 
   createEmployee(payload: Omit<Employee, 'id'>): Employee {
     const id = uuid();
     const employee: Employee = { ...payload, id };
-    this.employees.set(id, employee);
+    this.db.run('INSERT INTO employees (id, json) VALUES (?, ?)', [id, JSON.stringify(employee)]);
+    this.save();
     return employee;
   }
 
   updateEmployee(id: string, payload: Partial<Employee>): Employee | undefined {
-    const existing = this.employees.get(id);
+    const existing = this.getEmployee(id);
     if (!existing) return undefined;
     const updated = { ...existing, ...payload, id };
-    this.employees.set(id, updated);
+    this.db.run('UPDATE employees SET json = ? WHERE id = ?', [JSON.stringify(updated), id]);
+    this.save();
     return updated;
   }
 
   replaceEmployee(id: string, payload: Omit<Employee, 'id'>): Employee | undefined {
-    if (!this.employees.has(id)) return undefined;
+    if (!this.getEmployee(id)) return undefined;
     const replaced: Employee = { ...payload, id };
-    this.employees.set(id, replaced);
+    this.db.run('UPDATE employees SET json = ? WHERE id = ?', [JSON.stringify(replaced), id]);
+    this.save();
     return replaced;
   }
 
   getEmployee(id: string): Employee | undefined {
-    return this.employees.get(id);
+    const stmt = this.db.prepare('SELECT json FROM employees WHERE id = ?');
+    const row = stmt.getAsObject([id]) as { json?: string };
+    return parseRow<Employee>(row);
   }
 
   listEmployees(): Employee[] {
-    return Array.from(this.employees.values());
+    const rows = selectAll(this.db, 'SELECT json FROM employees');
+    return parseRows<Employee>(rows as any);
   }
 
   addSkill(skill: Skill): Skill {
-    this.skills.push(skill);
+    this.db.run('INSERT OR REPLACE INTO skills (id, json) VALUES (?, ?)', [skill.id, JSON.stringify(skill)]);
+    this.save();
     return skill;
   }
 
   addRole(role: Role): Role {
-    this.roles.push(role);
+    this.db.run('INSERT OR REPLACE INTO roles (id, json) VALUES (?, ?)', [role.id, JSON.stringify(role)]);
+    this.save();
     return role;
   }
 
   linkSkills(employee_id: string, payloads: EmployeeSkill[]): EmployeeSkill[] {
-    this.employeeSkills = this.employeeSkills.filter(es => es.employee_id !== employee_id);
-    this.employeeSkills.push(...payloads);
+    this.db.run('DELETE FROM employee_skills WHERE employee_id = ?', [employee_id]);
+    const stmt = this.db.prepare('INSERT INTO employee_skills (employee_id, skill_id, json) VALUES (?, ?, ?)');
+    payloads.forEach(row => stmt.run([employee_id, row.skill_id, JSON.stringify(row)]));
+    this.save();
     return payloads;
   }
 
   removeSkill(employee_id: string, skill_id: string) {
-    this.employeeSkills = this.employeeSkills.filter(es => !(es.employee_id === employee_id && es.skill_id === skill_id));
+    this.db.run('DELETE FROM employee_skills WHERE employee_id = ? AND skill_id = ?', [employee_id, skill_id]);
+    this.save();
   }
 
   linkRoles(employee_id: string, roles: EmployeeRole[]): EmployeeRole[] {
-    this.employeeRoles = this.employeeRoles.filter(er => er.employee_id !== employee_id);
-    this.employeeRoles.push(...roles);
+    this.db.run('DELETE FROM employee_roles WHERE employee_id = ?', [employee_id]);
+    const stmt = this.db.prepare('INSERT INTO employee_roles (employee_id, role_id, json) VALUES (?, ?, ?)');
+    roles.forEach(row => stmt.run([employee_id, row.role_id, JSON.stringify(row)]));
+    this.save();
     return roles;
   }
 
   removeRole(employee_id: string, role_id: string) {
-    this.employeeRoles = this.employeeRoles.filter(er => !(er.employee_id === employee_id && er.role_id === role_id));
+    this.db.run('DELETE FROM employee_roles WHERE employee_id = ? AND role_id = ?', [employee_id, role_id]);
+    this.save();
   }
 
   addResponsibility(res: EmployeeResponsibility): EmployeeResponsibility {
-    this.responsibilities.push(res);
+    this.db.run('INSERT OR REPLACE INTO responsibilities (id, employee_id, json) VALUES (?, ?, ?)', [
+      res.id,
+      res.employee_id,
+      JSON.stringify(res)
+    ]);
+    this.save();
     return res;
   }
 
   updateResponsibility(id: string, payload: Partial<EmployeeResponsibility>) {
-    const idx = this.responsibilities.findIndex(r => r.id === id);
-    if (idx === -1) return undefined;
-    const updated = { ...this.responsibilities[idx], ...payload };
-    this.responsibilities[idx] = updated;
+    const existing = selectOne(this.db, 'SELECT json FROM responsibilities WHERE id = ?', [id]);
+    const parsed = parseRow<EmployeeResponsibility>(existing as any);
+    if (!parsed) return undefined;
+    const updated = { ...parsed, ...payload };
+    this.db.run('UPDATE responsibilities SET json = ? WHERE id = ?', [JSON.stringify(updated), id]);
+    this.save();
     return updated;
   }
 
   addScheduleHistory(entry: EmployeeWorkScheduleHistory) {
-    this.scheduleHistory.push(entry);
+    const id = uuid();
+    this.db.run('INSERT OR REPLACE INTO schedule_history (id, employee_id, json) VALUES (?, ?, ?)', [
+      id,
+      entry.employee_id,
+      JSON.stringify(entry)
+    ]);
+    this.save();
     return entry;
   }
 
   addStatusChange(entry: EmployeeStatusChange) {
-    this.statusHistory.push(entry);
+    this.db.run('INSERT OR REPLACE INTO status_history (id, employee_id, json) VALUES (?, ?, ?)', [
+      entry.id,
+      entry.employee_id,
+      JSON.stringify(entry)
+    ]);
+    this.save();
     return entry;
   }
 
   addChangeLog(entry: EmployeeChangeLogEntry) {
-    this.changeLog.push(entry);
+    this.db.run('INSERT OR REPLACE INTO change_log (id, employee_id, json) VALUES (?, ?, ?)', [
+      entry.id,
+      entry.employee_id,
+      JSON.stringify(entry)
+    ]);
+    this.save();
     return entry;
   }
 
+  private getSkill(skill_id: string): Skill | undefined {
+    const row = selectOne(this.db, 'SELECT json FROM skills WHERE id = ?', [skill_id]);
+    return parseRow<Skill>(row as any);
+  }
+
+  private getRole(role_id: string): Role | undefined {
+    const row = selectOne(this.db, 'SELECT json FROM roles WHERE id = ?', [role_id]);
+    return parseRow<Role>(row as any);
+  }
+
   getFullEmployee(id: string): EmployeeWithRelations | undefined {
-    const employee = this.employees.get(id);
+    const employee = this.getEmployee(id);
     if (!employee) return undefined;
-    const responsibilities = this.responsibilities.filter(r => r.employee_id === id);
-    const schedule_history = this.scheduleHistory.filter(s => s.employee_id === id);
-    const status_history = this.statusHistory.filter(s => s.employee_id === id);
-    const skills = this.employeeSkills
-      .filter(es => es.employee_id === id)
-      .map(es => ({ ...es, skill: this.skills.find(s => s.id === es.skill_id)! }))
+    const responsibilities = parseRows<EmployeeResponsibility>(
+      selectAll(this.db, 'SELECT json FROM responsibilities WHERE employee_id = ?', [id]) as any
+    );
+    const schedule_history = parseRows<EmployeeWorkScheduleHistory>(
+      selectAll(this.db, 'SELECT json FROM schedule_history WHERE employee_id = ?', [id]) as any
+    );
+    const status_history = parseRows<EmployeeStatusChange>(
+      selectAll(this.db, 'SELECT json FROM status_history WHERE employee_id = ?', [id]) as any
+    );
+    const skills = parseRows<EmployeeSkill>(selectAll(this.db, 'SELECT json FROM employee_skills WHERE employee_id = ?', [id]) as any)
+      .map(es => ({ ...es, skill: this.getSkill(es.skill_id)! }))
       .filter(es => es.skill);
-    const roles = this.employeeRoles
-      .filter(er => er.employee_id === id)
-      .map(er => ({ ...er, role: this.roles.find(r => r.id === er.role_id)! }))
+    const roles = parseRows<EmployeeRole>(selectAll(this.db, 'SELECT json FROM employee_roles WHERE employee_id = ?', [id]) as any)
+      .map(er => ({ ...er, role: this.getRole(er.role_id)! }))
       .filter(er => er.role);
-    const changes = this.changeLog.filter(c => c.employee_id === id);
-    return {
-      ...employee,
-      responsibilities,
-      schedule_history,
-      status_history,
-      skills,
-      roles,
-      changes
-    };
+    const changes = parseRows<EmployeeChangeLogEntry>(selectAll(this.db, 'SELECT json FROM change_log WHERE employee_id = ?', [id]) as any);
+
+    return { ...employee, responsibilities, schedule_history, status_history, skills, roles, changes };
   }
 
   filterEmployees(filters: {
@@ -146,7 +200,8 @@ export class EmployeeRepository {
     manager_id?: string;
     q?: string;
   }): Employee[] {
-    return this.listEmployees().filter(emp => {
+    const all = this.listEmployees();
+    return all.filter(emp => {
       if (filters.status && emp.status !== filters.status) return false;
       if (filters.department && emp.department !== filters.department) return false;
       if (filters.manager_id && emp.manager_id !== filters.manager_id) return false;
@@ -155,14 +210,32 @@ export class EmployeeRepository {
         if (!haystack.includes(filters.q.toLowerCase())) return false;
       }
       if (filters.role) {
-        const hasRole = this.employeeRoles.some(er => er.employee_id === emp.id && er.role_id === filters.role);
+        const hasRole =
+          selectAll(this.db, 'SELECT 1 FROM employee_roles WHERE employee_id = ? AND role_id = ? LIMIT 1', [emp.id, filters.role]).length > 0;
         if (!hasRole) return false;
       }
       if (filters.skill) {
-        const hasSkill = this.employeeSkills.some(es => es.employee_id === emp.id && es.skill_id === filters.skill);
+        const hasSkill =
+          selectAll(this.db, 'SELECT 1 FROM employee_skills WHERE employee_id = ? AND skill_id = ? LIMIT 1', [emp.id, filters.skill]).length > 0;
         if (!hasSkill) return false;
       }
       return true;
     });
   }
+}
+
+function selectAll(db: Database, sql: string, params: any[] = []) {
+  const stmt = db.prepare(sql);
+  stmt.bind(params);
+  const rows: any[] = [];
+  while (stmt.step()) {
+    rows.push(stmt.getAsObject());
+  }
+  return rows;
+}
+
+function selectOne(db: Database, sql: string, params: any[] = []) {
+  const stmt = db.prepare(sql);
+  const row = stmt.getAsObject(params);
+  return row;
 }

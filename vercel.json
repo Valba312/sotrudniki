@@ -1,4 +1,4 @@
-{
+ко{
   "buildCommand": "cd frontend && npm install && npm run build",
   "installCommand": "cd frontend && npm install",
   "outputDirectory": "frontend/dist",

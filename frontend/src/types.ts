@@ -30,6 +30,8 @@ export interface EmployeeWithRelations {
   schedule_history: ScheduleHistory[];
   status_history: StatusHistory[];
   changes: ChangeLog[];
+  onboarding_checklist?: ChecklistItem[];
+  upcoming_event?: EventMarker;
 }
 
 export interface Responsibility {
@@ -92,6 +94,21 @@ export interface ChangeLog {
   comment?: string;
 }
 
+export type EventMarkerType = 'probation_end' | 'review' | 'vacation_return' | 'custom';
+
+export interface EventMarker {
+  label: string;
+  date: string;
+  type: EventMarkerType;
+}
+
+export interface ChecklistItem {
+  id: string;
+  title: string;
+  category: 'onboarding' | 'offboarding';
+  done: boolean;
+}
+
 export interface EmployeePayload {
   first_name: string;
   last_name: string;
@@ -111,32 +128,34 @@ export interface EmployeePayload {
   work_schedule_type: WorkScheduleType;
   work_hours_per_week: number;
   status: EmployeeStatus;
+  onboarding_checklist?: ChecklistItem[];
+  upcoming_event?: EventMarker;
 }
 
 export const employmentOptions: Record<EmploymentType, string> = {
   full_time: 'Полная занятость',
   contract: 'Контракт',
-  intern: 'Стажёр',
-  temporary: 'Временная занятость'
+  intern: 'Стажировка',
+  temporary: 'Временный/проектный'
 };
 
 export const workLocationOptions: Record<WorkLocation, string> = {
   office: 'Офис',
-  remote: 'Удалённо',
+  remote: 'Удаленно',
   hybrid: 'Гибрид'
 };
 
 export const scheduleOptions: Record<WorkScheduleType, string> = {
   five_two: '5/2',
   shift: 'Сменный',
-  flexible: 'Гибкий',
-  remote_first: 'Remote first'
+  flexible: 'Гибкий график',
+  remote_first: 'Удаленно в приоритете'
 };
 
 export const statusOptions: Record<EmployeeStatus, string> = {
-  active: 'В работе',
+  active: 'В штате',
   probation: 'Испытательный срок',
-  on_leave: 'В отпуске',
+  on_leave: 'В отпуске/отгуле',
   dismissed: 'Уволен',
   archived: 'Архив'
 };
