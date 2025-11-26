@@ -1,10 +1,12 @@
-import initSqlJs, { Database } from 'sql.js';
+// sql.js typings via shim; keep Database as any
+import initSqlJs from 'sql.js';
+type SqlDatabase = any;
 import fs from 'fs';
 import path from 'path';
 
-export async function createDatabaseConnection(dbFile: string): Promise<Database> {
+export async function createDatabaseConnection(dbFile: string): Promise<SqlDatabase> {
   const SQL = await initSqlJs({
-    locateFile: file => {
+    locateFile: (file: string) => {
       const local = path.resolve('node_modules/sql.js/dist', file);
       const workspace = path.resolve('../node_modules/sql.js/dist', file);
       if (fs.existsSync(local)) return local;
@@ -27,14 +29,14 @@ export async function createDatabaseConnection(dbFile: string): Promise<Database
   return db;
 }
 
-export function persist(db: Database, dbFile: string) {
+export function persist(db: SqlDatabase, dbFile: string) {
   if (dbFile === ':memory:') return;
   const data = db.export();
   const buffer = Buffer.from(data);
   fs.writeFileSync(dbFile, buffer);
 }
 
-function migrate(db: Database) {
+function migrate(db: any) {
   db.run(`
     CREATE TABLE IF NOT EXISTS employees (id TEXT PRIMARY KEY, json TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS responsibilities (id TEXT PRIMARY KEY, employee_id TEXT NOT NULL, json TEXT NOT NULL);
@@ -48,4 +50,4 @@ function migrate(db: Database) {
   `);
 }
 
-export type DbConnection = Database;
+export type DbConnection = SqlDatabase;

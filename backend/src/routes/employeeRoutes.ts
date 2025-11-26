@@ -11,7 +11,7 @@ export function employeeRoutes(service: EmployeeService) {
   router.post('/employees', authorize(['hr', 'admin']), (req: AuthedRequest, res) => {
     const parsed = employeeBaseSchema.safeParse(req.body);
     if (!parsed.success || !req.user) return res.status(400).json(parsed.error);
-    const employee = service.createEmployee(parsed.data, req.user.id);
+    const employee = service.createEmployee(parsed.data as any, req.user.id);
     return res.status(201).json(employee);
   });
 
@@ -24,7 +24,7 @@ export function employeeRoutes(service: EmployeeService) {
   router.put('/employees/:id', authorize(['hr', 'admin']), (req: AuthedRequest, res) => {
     const parsed = employeeBaseSchema.safeParse(req.body);
     if (!parsed.success || !req.user) return res.status(400).json(parsed.error);
-    const employee = service.replaceEmployee(req.params.id, parsed.data, req.user.id);
+    const employee = service.replaceEmployee(req.params.id, parsed.data as any, req.user.id);
     if (!employee) return res.status(404).json({ message: 'not found' });
     return res.json(employee);
   });
@@ -35,7 +35,7 @@ export function employeeRoutes(service: EmployeeService) {
     if (!existing) return res.status(404).json({ message: 'not found' });
     const parsed = employeeBaseSchema.partial().safeParse(req.body);
     if (!parsed.success) return res.status(400).json(parsed.error);
-    const updated = service.updateEmployee(req.params.id, parsed.data, req.user.id);
+    const updated = service.updateEmployee(req.params.id, parsed.data as any, req.user.id);
     return res.json(updated);
   });
 
@@ -72,7 +72,7 @@ export function employeeRoutes(service: EmployeeService) {
   router.post('/employees/:id/skills', authorize(['hr', 'admin', 'manager']), (req: AuthedRequest, res) => {
     const payload = z.array(skillPayloadSchema).safeParse(req.body);
     if (!payload.success) return res.status(400).json(payload.error);
-    const updated = service.setSkills(req.params.id, payload.data.map(s => ({ ...s, employee_id: req.params.id })));
+    const updated = service.setSkills(req.params.id, payload.data.map(s => ({ ...s, employee_id: req.params.id })) as any);
     return res.json(updated);
   });
 
@@ -84,7 +84,7 @@ export function employeeRoutes(service: EmployeeService) {
   router.post('/employees/:id/roles', authorize(['hr', 'admin', 'manager']), (req: AuthedRequest, res) => {
     const payload = z.array(rolePayloadSchema).safeParse(req.body);
     if (!payload.success) return res.status(400).json(payload.error);
-    const updated = service.setRoles(req.params.id, payload.data.map(r => ({ ...r, employee_id: req.params.id })));
+    const updated = service.setRoles(req.params.id, payload.data.map(r => ({ ...r, employee_id: req.params.id })) as any);
     return res.json(updated);
   });
 
@@ -103,7 +103,7 @@ export function employeeRoutes(service: EmployeeService) {
   router.post('/employees/:id/schedules', authorize(['hr', 'admin', 'manager']), (req: AuthedRequest, res) => {
     const payload = scheduleHistorySchema.safeParse(req.body);
     if (!payload.success) return res.status(400).json(payload.error);
-    const created = service.addScheduleHistory(req.params.id, payload.data);
+    const created = service.addScheduleHistory(req.params.id, payload.data as any);
     return res.status(201).json(created);
   });
 

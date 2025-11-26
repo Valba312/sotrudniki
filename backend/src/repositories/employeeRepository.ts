@@ -1,4 +1,5 @@
-import { Database } from 'sql.js';
+// sql.js typings are provided via shim; using any to avoid build issues
+type SqlDatabase = any;
 import { v4 as uuid } from 'uuid';
 import {
   Employee,
@@ -23,7 +24,7 @@ export class EmployeeRepository {
   private readonly dbFile: string;
   private readonly shouldPersist: boolean;
 
-  constructor(private readonly db: Database, dbPath: string) {
+  constructor(private readonly db: SqlDatabase, dbPath: string) {
     this.dbFile = path.resolve(dbPath);
     this.shouldPersist = dbPath !== ':memory:';
   }
@@ -224,7 +225,7 @@ export class EmployeeRepository {
   }
 }
 
-function selectAll(db: Database, sql: string, params: any[] = []) {
+function selectAll(db: any, sql: string, params: any[] = []) {
   const stmt = db.prepare(sql);
   stmt.bind(params);
   const rows: any[] = [];
@@ -234,7 +235,7 @@ function selectAll(db: Database, sql: string, params: any[] = []) {
   return rows;
 }
 
-function selectOne(db: Database, sql: string, params: any[] = []) {
+function selectOne(db: any, sql: string, params: any[] = []) {
   const stmt = db.prepare(sql);
   const row = stmt.getAsObject(params);
   return row;
