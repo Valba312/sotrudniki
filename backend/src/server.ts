@@ -15,7 +15,8 @@ app.use(cors());
 app.use(express.json());
 app.use(authMiddleware);
 
-const dbPath = process.env.DATABASE_URL || 'data/employee-card.sqlite';
+// В серверлес-среде Vercel писать можно только в /tmp, поэтому используем его по умолчанию.
+const dbPath = process.env.DATABASE_URL || '/tmp/employee-card.sqlite';
 const db = await createDatabaseConnection(dbPath);
 const repository = new EmployeeRepository(db, dbPath);
 const audit = new AuditService(repository);
