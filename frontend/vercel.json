@@ -1,0 +1,9 @@
+{
+  "nodeVersion": "20.x",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://sotrudniki-backend.vercel.app/"
+    }
+  ]
+}
